@@ -7,15 +7,24 @@ const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const _= require("lodash");
 const app = express();
-
+const PORT = process.env.PORT || 3000;
 app.set('view engine', 'ejs');
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
 
 //connect
- mongoose.connect('mongodb+srv://athibharath237:Test123@cluster0.eqpgeeq.mongodb.net/todolistDB').
- catch(error => handleError(error));
+ mongoose.set('strictQuery', false);
+const connectDB = async () => {
+    try {
+        const conn = await mongoose.connect(process.env.MONGO_URI);
+        console.log('MongoDB Connectes: ${conn.connection.host}');
+    } catch (error) {
+        console.log(error);
+        process.exit(1);
+    }
+}
+
 
 
 
@@ -165,14 +174,11 @@ app.post("/work",function(req,res){
     res.redirect("/work");
 });
 
-let port = process.env.PORT;
-if(port == null || port == ""){
-    port = 3000;
-}
-
-
-app.listen(port,function(){
-    console.log("Server has started successfully");
+connectDB().then(() => {
+    app.listen(PORT, () => {
+        console.log('Listening on port ${PORT}');
+    })
 });
+
 
 //https://cloud.mongodb.com/v2/64af4c4bd2813007c5c9cfc1#/metrics/replicaSet/64b00804bb23db4b87c6bcb3/explorer/todolistDB
