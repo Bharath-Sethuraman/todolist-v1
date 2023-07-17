@@ -1,19 +1,27 @@
-require('dotenv').config();
+const dotenv = require("dotenv");
+dotenv.config({ path: './config.env' });
 const express = require("express");
-//const https = require("https");
 const bodyParser = require("body-parser");
 
-
 const mongoose = require("mongoose");
-const _= require("lodash");
+const _ = require("lodash");
 const app = express();
+const PORT = process.env.PORT || 8080;
 app.set('view engine', 'ejs');
 
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
+mongoose.set('strictQuery', false);
 
-//connect
-mongoose.connect("mongodb+srv://athibharath237:Test123@cluster0.eqpgeeq.mongodb.net/todolistDB");
+const connectDB = async () => {
+  try {
+    const conn = await mongoose.connect(process.env.MONGO_URI);
+    console.log(`MongoDB Connected: ${conn.connection.host}`);
+  } catch (error) {
+    console.log(error);
+    process.exit(1);
+  }
+};
 
 //schema
 const itemsSchema = {
@@ -153,11 +161,9 @@ app.get("/about",function(req,res){
     res.render("about");
 })
 
-let port = process.env.PORT;
-if (port == null || port == "") {
- port = 3001;
-}
-app.listen(port, function() {
- console.log("Server started successfully");
+connectDB().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Listening on port ${PORT}`);
+  });
 });
 
